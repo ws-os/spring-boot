@@ -34,7 +34,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,7 +46,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 public class SampleActuatorApplicationTests {
 
 	@Autowired
@@ -219,8 +217,9 @@ public class SampleActuatorApplicationTests {
 				.withBasicAuth("user", getPassword())
 				.getForEntity("/application/beans", Map.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(entity.getBody()).containsOnlyKeys("beans", "parent", "id");
-		assertThat(((String) entity.getBody().get("id"))).startsWith("application");
+		assertThat(entity.getBody()).containsOnlyKeys("beans", "parent", "contextId");
+		assertThat(((String) entity.getBody().get("contextId")))
+				.startsWith("application");
 	}
 
 	@SuppressWarnings("unchecked")

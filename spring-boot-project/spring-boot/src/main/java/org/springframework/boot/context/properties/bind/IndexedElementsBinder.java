@@ -48,6 +48,11 @@ abstract class IndexedElementsBinder<T> extends AggregateBinder<T> {
 		super(context);
 	}
 
+	@Override
+	protected boolean isAllowRecursiveBinding(ConfigurationPropertySource source) {
+		return source == null || source instanceof IterableConfigurationPropertySource;
+	}
+
 	protected final void bindIndexed(ConfigurationPropertyName name, Bindable<?> target,
 			AggregateElementBinder elementBinder, IndexedCollectionSupplier collection,
 			ResolvableType aggregateType, ResolvableType elementType) {
@@ -122,11 +127,10 @@ abstract class IndexedElementsBinder<T> extends AggregateBinder<T> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private <C> C convert(Object value, ResolvableType type) {
 		value = getContext().getPlaceholdersResolver().resolvePlaceholders(value);
 		BinderConversionService conversionService = getContext().getConversionService();
-		return (C) conversionService.convert(value, type);
+		return ResolvableTypeDescriptor.forType(type).convert(conversionService, value);
 	}
 
 	/**

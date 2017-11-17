@@ -96,7 +96,7 @@ public class SpringBootContextLoader extends AbstractContextLoader {
 		Assert.state(
 				!ObjectUtils.isEmpty(configClasses)
 						|| !ObjectUtils.isEmpty(configLocations),
-				"No configuration classes "
+				() -> "No configuration classes "
 						+ "or locations found in @SpringApplicationConfiguration. "
 						+ "For default configuration detection to work you need "
 						+ "Spring 4.0.3 or better (found " + SpringVersion.getVersion()
@@ -105,7 +105,7 @@ public class SpringBootContextLoader extends AbstractContextLoader {
 		application.setMainApplicationClass(config.getTestClass());
 		application.addPrimarySources(Arrays.asList(configClasses));
 		application.getSources().addAll(Arrays.asList(configLocations));
-		ConfigurableEnvironment environment = new StandardEnvironment();
+		ConfigurableEnvironment environment = getEnvironment();
 		if (!ObjectUtils.isEmpty(config.getActiveProfiles())) {
 			setActiveProfiles(environment, config.getActiveProfiles());
 		}
@@ -146,6 +146,15 @@ public class SpringBootContextLoader extends AbstractContextLoader {
 	 */
 	protected SpringApplication getSpringApplication() {
 		return new SpringApplication();
+	}
+
+	/**
+	 * Builds a new {@link ConfigurableEnvironment} instance. You can override this method
+	 * to return something other than {@link StandardEnvironment} if necessary.
+	 * @return a {@link ConfigurableEnvironment} instance
+	 */
+	protected ConfigurableEnvironment getEnvironment() {
+		return new StandardEnvironment();
 	}
 
 	private void setActiveProfiles(ConfigurableEnvironment environment,

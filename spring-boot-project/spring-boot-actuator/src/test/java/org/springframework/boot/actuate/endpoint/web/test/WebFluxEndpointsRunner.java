@@ -22,8 +22,10 @@ import java.util.List;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
-import org.springframework.boot.actuate.endpoint.convert.ConversionServiceOperationParameterMapper;
+import org.springframework.boot.actuate.endpoint.convert.ConversionServiceParameterMapper;
 import org.springframework.boot.actuate.endpoint.http.ActuatorMediaType;
+import org.springframework.boot.actuate.endpoint.web.EndpointMediaTypes;
+import org.springframework.boot.actuate.endpoint.web.EndpointPathResolver;
 import org.springframework.boot.actuate.endpoint.web.annotation.WebAnnotationEndpointDiscoverer;
 import org.springframework.boot.actuate.endpoint.web.reactive.WebFluxEndpointHandlerMapping;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -32,7 +34,7 @@ import org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfigurat
 import org.springframework.boot.endpoint.web.EndpointMapping;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory;
-import org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext;
+import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -56,7 +58,7 @@ class WebFluxEndpointsRunner extends AbstractWebEndpointRunner {
 	}
 
 	private static ConfigurableApplicationContext createContext(List<Class<?>> classes) {
-		ReactiveWebServerApplicationContext context = new ReactiveWebServerApplicationContext();
+		AnnotationConfigReactiveWebServerApplicationContext context = new AnnotationConfigReactiveWebServerApplicationContext();
 		classes.add(WebFluxEndpointConfiguration.class);
 		context.register(classes.toArray(new Class<?>[classes.size()]));
 		context.refresh();
@@ -99,12 +101,14 @@ class WebFluxEndpointsRunner extends AbstractWebEndpointRunner {
 		public WebFluxEndpointHandlerMapping webEndpointReactiveHandlerMapping() {
 			List<String> mediaTypes = Arrays.asList(MediaType.APPLICATION_JSON_VALUE,
 					ActuatorMediaType.V2_JSON);
+			EndpointMediaTypes endpointMediaTypes = new EndpointMediaTypes(mediaTypes,
+					mediaTypes);
 			WebAnnotationEndpointDiscoverer discoverer = new WebAnnotationEndpointDiscoverer(
-					this.applicationContext,
-					new ConversionServiceOperationParameterMapper(), (id) -> null,
-					mediaTypes, mediaTypes);
+					this.applicationContext, new ConversionServiceParameterMapper(),
+					endpointMediaTypes, EndpointPathResolver.useEndpointId(), null, null);
 			return new WebFluxEndpointHandlerMapping(new EndpointMapping("/application"),
-					discoverer.discoverEndpoints(), new CorsConfiguration());
+					discoverer.discoverEndpoints(), endpointMediaTypes,
+					new CorsConfiguration());
 		}
 
 	}

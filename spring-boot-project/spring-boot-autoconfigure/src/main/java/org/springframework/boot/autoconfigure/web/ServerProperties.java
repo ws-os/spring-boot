@@ -31,6 +31,7 @@ import java.util.TimeZone;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.web.server.Compression;
+import org.springframework.boot.web.server.Http2;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.boot.web.servlet.server.Jsp;
 import org.springframework.util.Assert;
@@ -101,6 +102,9 @@ public class ServerProperties {
 
 	@NestedConfigurationProperty
 	private Compression compression = new Compression();
+
+	@NestedConfigurationProperty
+	private Http2 http2 = new Http2();
 
 	private Servlet servlet = new Servlet();
 
@@ -188,6 +192,10 @@ public class ServerProperties {
 
 	public Compression getCompression() {
 		return this.compression;
+	}
+
+	public Http2 getHttp2() {
+		return this.http2;
 	}
 
 	public Servlet getServlet() {
@@ -609,6 +617,11 @@ public class ServerProperties {
 		 */
 		private List<String> additionalTldSkipPatterns = new ArrayList<>();
 
+		/**
+		 * Static resource configuration.
+		 */
+		private final Resource resource = new Resource();
+
 		public int getMaxThreads() {
 			return this.maxThreads;
 		}
@@ -739,6 +752,10 @@ public class ServerProperties {
 
 		public void setAdditionalTldSkipPatterns(List<String> additionalTldSkipPatterns) {
 			this.additionalTldSkipPatterns = additionalTldSkipPatterns;
+		}
+
+		public Resource getResource() {
+			return this.resource;
 		}
 
 		/**
@@ -876,6 +893,26 @@ public class ServerProperties {
 
 			public void setBuffered(boolean buffered) {
 				this.buffered = buffered;
+			}
+
+		}
+
+		/**
+		 * Tomcat static resource properties.
+		 */
+		public static class Resource {
+
+			/**
+			 * Time-to-live in milliseconds of the static resource cache.
+			 */
+			private Long cacheTtl;
+
+			public Long getCacheTtl() {
+				return this.cacheTtl;
+			}
+
+			public void setCacheTtl(Long cacheTtl) {
+				this.cacheTtl = cacheTtl;
 			}
 
 		}

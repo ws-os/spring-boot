@@ -21,22 +21,19 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.web.reactive.MockReactiveWebServerFactory;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext;
+import org.springframework.boot.test.context.runner.ReactiveWebApplicationContextRunner;
 import org.springframework.boot.web.reactive.server.ReactiveWebServerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.config.annotation.web.reactive.HttpSecurityConfiguration;
-import org.springframework.security.config.annotation.web.reactive.WebFluxSecurityConfiguration;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.MapUserDetailsRepository;
+import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsRepository;
-import org.springframework.security.web.server.WebFilterChainFilter;
+import org.springframework.security.web.server.WebFilterChainProxy;
 import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
 
@@ -49,8 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ReactiveSecurityAutoConfigurationTests {
 
-	private ApplicationContextRunner contextRunner = new ApplicationContextRunner(
-			ReactiveWebServerApplicationContext::new);
+	private ReactiveWebApplicationContextRunner contextRunner = new ReactiveWebApplicationContextRunner();
 
 	@Test
 	public void enablesWebFluxSecurity() {
@@ -58,11 +54,10 @@ public class ReactiveSecurityAutoConfigurationTests {
 				.withConfiguration(
 						AutoConfigurations.of(ReactiveSecurityAutoConfiguration.class))
 				.run((context) -> {
-					assertThat(context).getBean(HttpSecurityConfiguration.class)
-							.isNotNull();
+					assertThat(context).getBean(WebFilterChainProxy.class).isNotNull();
 					assertThat(context).getBean(WebFluxSecurityConfiguration.class)
 							.isNotNull();
-					assertThat(context).getBean(WebFilterChainFilter.class).isNotNull();
+					assertThat(context).getBean(WebFilterChainProxy.class).isNotNull();
 				});
 	}
 
@@ -72,9 +67,9 @@ public class ReactiveSecurityAutoConfigurationTests {
 				.withConfiguration(
 						AutoConfigurations.of(ReactiveSecurityAutoConfiguration.class))
 				.run((context) -> {
-					UserDetailsRepository userDetailsRepository = context
-							.getBean(UserDetailsRepository.class);
-					assertThat(userDetailsRepository.findByUsername("user").block())
+					ReactiveUserDetailsService userDetailsService = context
+							.getBean(ReactiveUserDetailsService.class);
+					assertThat(userDetailsService.findByUsername("user").block())
 							.isNotNull();
 				});
 	}
@@ -85,13 +80,13 @@ public class ReactiveSecurityAutoConfigurationTests {
 				.withConfiguration(
 						AutoConfigurations.of(ReactiveSecurityAutoConfiguration.class))
 				.run((context) -> {
-					UserDetailsRepository userDetailsRepository = context
-							.getBean(UserDetailsRepository.class);
-					assertThat(userDetailsRepository.findByUsername("user").block())
+					ReactiveUserDetailsService userDetailsService = context
+							.getBean(ReactiveUserDetailsService.class);
+					assertThat(userDetailsService.findByUsername("user").block())
 							.isNull();
-					assertThat(userDetailsRepository.findByUsername("foo").block())
+					assertThat(userDetailsService.findByUsername("foo").block())
 							.isNotNull();
-					assertThat(userDetailsRepository.findByUsername("admin").block())
+					assertThat(userDetailsService.findByUsername("admin").block())
 							.isNotNull();
 				});
 	}
@@ -103,8 +98,8 @@ public class ReactiveSecurityAutoConfigurationTests {
 						TestConfig.class)
 				.withConfiguration(
 						AutoConfigurations.of(ReactiveSecurityAutoConfiguration.class))
-				.run((context) -> assertThat(context).getBean(UserDetailsRepository.class)
-						.isNull());
+				.run((context) -> assertThat(context)
+						.getBean(ReactiveUserDetailsService.class).isNull());
 	}
 
 	@Configuration
@@ -127,12 +122,12 @@ public class ReactiveSecurityAutoConfigurationTests {
 	static class UserConfig {
 
 		@Bean
-		public MapUserDetailsRepository userDetailsRepository() {
+		public MapReactiveUserDetailsService userDetailsService() {
 			UserDetails foo = User.withUsername("foo").password("foo").roles("USER")
 					.build();
 			UserDetails admin = User.withUsername("admin").password("admin")
 					.roles("USER", "ADMIN").build();
-			return new MapUserDetailsRepository(foo, admin);
+			return new MapReactiveUserDetailsService(foo, admin);
 		}
 
 	}

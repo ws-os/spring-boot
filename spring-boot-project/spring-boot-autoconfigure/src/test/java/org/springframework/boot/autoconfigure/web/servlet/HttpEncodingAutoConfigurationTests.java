@@ -16,7 +16,7 @@
 
 package org.springframework.boot.autoconfigure.web.servlet;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -147,7 +147,7 @@ public class HttpEncodingAutoConfigurationTests {
 		Map<String, WebServerFactoryCustomizer<?>> beans = getWebServerFactoryCustomizerBeans();
 		assertThat(beans.size()).isEqualTo(1);
 		assertThat(this.context.getBean(MockServletWebServerFactory.class)
-				.getLocaleCharsetMappings().size()).isEqualTo(0);
+				.getLocaleCharsetMappings()).isEmpty();
 	}
 
 	@Test
@@ -160,10 +160,10 @@ public class HttpEncodingAutoConfigurationTests {
 				.getLocaleCharsetMappings().size()).isEqualTo(2);
 		assertThat(this.context.getBean(MockServletWebServerFactory.class)
 				.getLocaleCharsetMappings().get(Locale.ENGLISH))
-						.isEqualTo(Charset.forName("UTF-8"));
+						.isEqualTo(StandardCharsets.UTF_8);
 		assertThat(this.context.getBean(MockServletWebServerFactory.class)
 				.getLocaleCharsetMappings().get(Locale.FRANCE))
-						.isEqualTo(Charset.forName("UTF-8"));
+						.isEqualTo(StandardCharsets.UTF_8);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

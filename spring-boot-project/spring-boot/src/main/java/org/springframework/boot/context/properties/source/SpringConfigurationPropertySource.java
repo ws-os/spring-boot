@@ -20,13 +20,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Function;
 
-import org.springframework.boot.env.RandomValuePropertySource;
 import org.springframework.boot.origin.Origin;
 import org.springframework.boot.origin.PropertySourceOrigin;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.util.Assert;
 
@@ -61,24 +62,24 @@ class SpringConfigurationPropertySource implements ConfigurationPropertySource {
 
 	private final PropertyMapper mapper;
 
-	private final Function<ConfigurationPropertyName, ConfigurationPropertyState> containsDescendantOfMethod;
+	private final Function<ConfigurationPropertyName, ConfigurationPropertyState> containsDescendantOf;
 
 	/**
 	 * Create a new {@link SpringConfigurationPropertySource} implementation.
 	 * @param propertySource the source property source
 	 * @param mapper the property mapper
-	 * @param containsDescendantOfMethod function used to implement
+	 * @param containsDescendantOf function used to implement
 	 * {@link #containsDescendantOf(ConfigurationPropertyName)} (may be {@code null})
 	 */
 	SpringConfigurationPropertySource(PropertySource<?> propertySource,
 			PropertyMapper mapper,
-			Function<ConfigurationPropertyName, ConfigurationPropertyState> containsDescendantOfMethod) {
+			Function<ConfigurationPropertyName, ConfigurationPropertyState> containsDescendantOf) {
 		Assert.notNull(propertySource, "PropertySource must not be null");
 		Assert.notNull(mapper, "Mapper must not be null");
 		this.propertySource = propertySource;
 		this.mapper = new ExceptionSwallowingPropertyMapper(mapper);
-		this.containsDescendantOfMethod = (containsDescendantOfMethod != null
-				? containsDescendantOfMethod : (n) -> ConfigurationPropertyState.UNKNOWN);
+		this.containsDescendantOf = (containsDescendantOf != null ? containsDescendantOf
+				: (n) -> ConfigurationPropertyState.UNKNOWN);
 	}
 
 	@Override
@@ -91,7 +92,7 @@ class SpringConfigurationPropertySource implements ConfigurationPropertySource {
 	@Override
 	public ConfigurationPropertyState containsDescendantOf(
 			ConfigurationPropertyName name) {
-		return this.containsDescendantOfMethod.apply(name);
+		return this.containsDescendantOf.apply(name);
 	}
 
 	@Override
@@ -146,14 +147,22 @@ class SpringConfigurationPropertySource implements ConfigurationPropertySource {
 					(EnumerablePropertySource<?>) source, mapper);
 		}
 		return new SpringConfigurationPropertySource(source, mapper,
-				getContainsDescendantOfMethod(source));
+				getContainsDescendantOfForSource(source));
 	}
 
 	private static PropertyMapper getPropertyMapper(PropertySource<?> source) {
-		if (source instanceof SystemEnvironmentPropertySource) {
+		if (source instanceof SystemEnvironmentPropertySource
+				&& hasSystemEnvironmentName(source)) {
 			return SystemEnvironmentPropertyMapper.INSTANCE;
 		}
 		return DefaultPropertyMapper.INSTANCE;
+	}
+
+	private static boolean hasSystemEnvironmentName(PropertySource<?> source) {
+		String name = source.getName();
+		return StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME.equals(name)
+				|| name.endsWith("-"
+						+ StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 	}
 
 	private static boolean isFullEnumerable(PropertySource<?> source) {
@@ -178,14 +187,20 @@ class SpringConfigurationPropertySource implements ConfigurationPropertySource {
 		return source;
 	}
 
-	private static Function<ConfigurationPropertyName, ConfigurationPropertyState> getContainsDescendantOfMethod(
+	private static Function<ConfigurationPropertyName, ConfigurationPropertyState> getContainsDescendantOfForSource(
 			PropertySource<?> source) {
-		if (source instanceof RandomValuePropertySource) {
-			return (name) -> (name.isAncestorOf(RANDOM) || name.equals(RANDOM)
-					? ConfigurationPropertyState.PRESENT
-					: ConfigurationPropertyState.ABSENT);
+		if (source.getSource() instanceof Random) {
+			return SpringConfigurationPropertySource::containsDescendantOfForRandom;
 		}
 		return null;
+	}
+
+	private static ConfigurationPropertyState containsDescendantOfForRandom(
+			ConfigurationPropertyName name) {
+		if (name.isAncestorOf(RANDOM) || name.equals(RANDOM)) {
+			return ConfigurationPropertyState.PRESENT;
+		}
+		return ConfigurationPropertyState.ABSENT;
 	}
 
 	/**

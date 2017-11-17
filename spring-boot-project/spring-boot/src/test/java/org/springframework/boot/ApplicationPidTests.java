@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,17 @@ public class ApplicationPidTests {
 	public void writePid() throws Exception {
 		ApplicationPid pid = new ApplicationPid("123");
 		File file = this.temporaryFolder.newFile();
+		pid.write(file);
+		String actual = FileCopyUtils.copyToString(new FileReader(file));
+		assertThat(actual).isEqualTo("123");
+	}
+
+	@Test
+	public void writeNewPid() throws Exception {
+		// gh-10784
+		ApplicationPid pid = new ApplicationPid("123");
+		File file = this.temporaryFolder.newFile();
+		file.delete();
 		pid.write(file);
 		String actual = FileCopyUtils.copyToString(new FileReader(file));
 		assertThat(actual).isEqualTo("123");

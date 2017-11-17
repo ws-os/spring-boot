@@ -62,6 +62,7 @@ import org.springframework.util.StringUtils;
  * @author Andy Wilkinson
  * @author Eddú Meléndez
  * @author Christoph Dreis
+ * @author Kristine Jetzke
  * @since 2.0.0
  * @see UndertowServletWebServerFactory
  */
@@ -156,20 +157,37 @@ public class UndertowServletWebServer implements WebServer {
 				this.undertow.start();
 				this.started = true;
 				UndertowServletWebServer.logger
-						.info("Undertow started on port(s) " + getPortsDescription());
+						.info("Undertow started on port(s) " + getPortsDescription()
+								+ " with context path '" + this.contextPath + "'");
 			}
 			catch (Exception ex) {
-				if (findBindException(ex) != null) {
-					List<Port> failedPorts = getConfiguredPorts();
-					List<Port> actualPorts = getActualPorts();
-					failedPorts.removeAll(actualPorts);
-					if (failedPorts.size() == 1) {
-						throw new PortInUseException(
-								failedPorts.iterator().next().getNumber());
+				try {
+					if (findBindException(ex) != null) {
+						List<Port> failedPorts = getConfiguredPorts();
+						List<Port> actualPorts = getActualPorts();
+						failedPorts.removeAll(actualPorts);
+						if (failedPorts.size() == 1) {
+							throw new PortInUseException(
+									failedPorts.iterator().next().getNumber());
+						}
 					}
+					throw new WebServerException("Unable to start embedded Undertow", ex);
 				}
-				throw new WebServerException("Unable to start embedded Undertow", ex);
+				finally {
+					stopSilently();
+				}
 			}
+		}
+	}
+
+	private void stopSilently() {
+		try {
+			if (this.undertow != null) {
+				this.undertow.stop();
+			}
+		}
+		catch (Exception ex) {
+			// Ignore
 		}
 	}
 

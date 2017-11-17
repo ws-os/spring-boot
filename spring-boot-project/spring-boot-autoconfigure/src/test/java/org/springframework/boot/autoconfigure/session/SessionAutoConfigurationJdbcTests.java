@@ -22,10 +22,11 @@ import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.DatabaseInitializationMode;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
+import org.springframework.boot.autoconfigure.session.JdbcSessionConfiguration.SpringBootJdbcHttpSessionConfiguration;
+import org.springframework.boot.jdbc.DataSourceInitializationMode;
 import org.springframework.boot.test.context.HideClassesClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
@@ -54,8 +55,7 @@ public class SessionAutoConfigurationJdbcTests
 	private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
 					DataSourceTransactionManagerAutoConfiguration.class,
-					JdbcTemplateAutoConfiguration.class,
-					SessionAutoConfiguration.class))
+					JdbcTemplateAutoConfiguration.class, SessionAutoConfiguration.class))
 			.withPropertyValues("spring.datasource.generate-unique-name=true");
 
 	@Test
@@ -80,10 +80,13 @@ public class SessionAutoConfigurationJdbcTests
 		assertThat(new DirectFieldAccessor(repository).getPropertyValue("tableName"))
 				.isEqualTo("SPRING_SESSION");
 		assertThat(context.getBean(JdbcSessionProperties.class).getInitializeSchema())
-				.isEqualTo(DatabaseInitializationMode.EMBEDDED);
+				.isEqualTo(DataSourceInitializationMode.EMBEDDED);
 		assertThat(context.getBean(JdbcOperations.class)
 				.queryForList("select * from SPRING_SESSION")).isEmpty();
-
+		SpringBootJdbcHttpSessionConfiguration configuration = context
+				.getBean(SpringBootJdbcHttpSessionConfiguration.class);
+		assertThat(new DirectFieldAccessor(configuration).getPropertyValue("cleanupCron"))
+				.isEqualTo("0 * * * * *");
 	}
 
 	@Test
@@ -97,7 +100,7 @@ public class SessionAutoConfigurationJdbcTests
 	}
 
 	@Test
-	public void disableDatabaseInitializer() {
+	public void disableDataSourceInitializer() {
 		this.contextRunner.withPropertyValues("spring.session.store-type=jdbc",
 				"spring.session.jdbc.initialize-schema=never").run((context) -> {
 					JdbcOperationsSessionRepository repository = validateSessionRepository(
@@ -106,7 +109,7 @@ public class SessionAutoConfigurationJdbcTests
 							.getPropertyValue("tableName")).isEqualTo("SPRING_SESSION");
 					assertThat(context.getBean(JdbcSessionProperties.class)
 							.getInitializeSchema())
-									.isEqualTo(DatabaseInitializationMode.NEVER);
+									.isEqualTo(DataSourceInitializationMode.NEVER);
 					this.thrown.expect(BadSqlGrammarException.class);
 					context.getBean(JdbcOperations.class)
 							.queryForList("select * from SPRING_SESSION");
@@ -126,9 +129,25 @@ public class SessionAutoConfigurationJdbcTests
 							.getPropertyValue("tableName")).isEqualTo("FOO_BAR");
 					assertThat(context.getBean(JdbcSessionProperties.class)
 							.getInitializeSchema())
-									.isEqualTo(DatabaseInitializationMode.EMBEDDED);
+									.isEqualTo(DataSourceInitializationMode.EMBEDDED);
 					assertThat(context.getBean(JdbcOperations.class)
 							.queryForList("select * from FOO_BAR")).isEmpty();
+				});
+	}
+
+	@Test
+	public void customCleanupCron() {
+		this.contextRunner
+				.withPropertyValues("spring.session.store-type=jdbc",
+						"spring.session.jdbc.cleanup-cron=0 0 12 * * *")
+				.run((context) -> {
+					assertThat(
+							context.getBean(JdbcSessionProperties.class).getCleanupCron())
+									.isEqualTo("0 0 12 * * *");
+					SpringBootJdbcHttpSessionConfiguration configuration = context
+							.getBean(SpringBootJdbcHttpSessionConfiguration.class);
+					assertThat(new DirectFieldAccessor(configuration)
+							.getPropertyValue("cleanupCron")).isEqualTo("0 0 12 * * *");
 				});
 	}
 

@@ -28,7 +28,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,9 +39,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = {
-		"management.port=0", "management.address=127.0.0.1",
-		"management.context-path:/admin" })
-@DirtiesContext
+		"management.server.port=0", "management.server.address=127.0.0.1",
+		"management.server.context-path:/admin" })
 public class ManagementAddressActuatorApplicationTests {
 
 	@LocalServerPort
@@ -62,8 +60,8 @@ public class ManagementAddressActuatorApplicationTests {
 	@Test
 	public void testHealth() throws Exception {
 		ResponseEntity<String> entity = new TestRestTemplate()
-				.withBasicAuth("user", getPassword())
-				.getForEntity("http://localhost:" + this.managementPort + "/admin/health",
+				.withBasicAuth("user", getPassword()).getForEntity("http://localhost:"
+						+ this.managementPort + "/admin/application/health",
 						String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(entity.getBody()).contains("\"status\":\"UP\"");

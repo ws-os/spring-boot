@@ -18,6 +18,7 @@ package org.springframework.boot;
 
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,7 +63,7 @@ public class ResourceBanner implements Banner {
 		try {
 			String banner = StreamUtils.copyToString(this.resource.getInputStream(),
 					environment.getProperty("banner.charset", Charset.class,
-							Charset.forName("UTF-8")));
+							StandardCharsets.UTF_8));
 
 			for (PropertyResolver resolver : getPropertyResolvers(environment,
 					sourceClass)) {
@@ -130,8 +131,8 @@ public class ResourceBanner implements Banner {
 	private PropertyResolver getTitleResolver(Class<?> sourceClass) {
 		MutablePropertySources sources = new MutablePropertySources();
 		String applicationTitle = getApplicationTitle(sourceClass);
-		Map<String, Object> titleMap = Collections.<String, Object>singletonMap(
-				"application.title", (applicationTitle == null ? "" : applicationTitle));
+		Map<String, Object> titleMap = Collections.singletonMap("application.title",
+				(applicationTitle == null ? "" : applicationTitle));
 		sources.addFirst(new MapPropertySource("title", titleMap));
 		return new PropertySourcesPropertyResolver(sources);
 	}

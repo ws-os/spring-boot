@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.beans.BeansEndpointAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.endpoint.EndpointAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.web.server.ManagementContextAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -74,10 +75,10 @@ public class WebMvcEndpointIntegrationTests {
 	}
 
 	@Test
-	public void endpointsAreSecureByDefaultWithCustomContextPath() throws Exception {
+	public void endpointsAreSecureByDefaultWithCustomBasePath() throws Exception {
 		this.context = new AnnotationConfigWebApplicationContext();
 		this.context.register(SecureConfiguration.class);
-		TestPropertyValues.of("management.context-path:/management")
+		TestPropertyValues.of("management.endpoints.web.base-path:/management")
 				.applyTo(this.context);
 		MockMvc mockMvc = createSecureMockMvc();
 		mockMvc.perform(get("/management/beans").accept(MediaType.APPLICATION_JSON))
@@ -85,14 +86,13 @@ public class WebMvcEndpointIntegrationTests {
 	}
 
 	@Test
-	public void endpointsAreSecureWithActuatorRoleWithCustomContextPath()
-			throws Exception {
+	public void endpointsAreSecureWithActuatorRoleWithCustomBasePath() throws Exception {
 		TestSecurityContextHolder.getContext().setAuthentication(
 				new TestingAuthenticationToken("user", "N/A", "ROLE_ACTUATOR"));
 		this.context = new AnnotationConfigWebApplicationContext();
 		this.context.register(SecureConfiguration.class);
-		TestPropertyValues.of("management.context-path:/management",
-				"endpoints.default.web.enabled=true").applyTo(this.context);
+		TestPropertyValues.of("management.endpoints.web.base-path:/management",
+				"management.endpoints.web.expose=*").applyTo(this.context);
 		MockMvc mockMvc = createSecureMockMvc();
 		mockMvc.perform(get("/management/beans")).andExpect(status().isOk());
 	}
@@ -113,6 +113,7 @@ public class WebMvcEndpointIntegrationTests {
 
 	@ImportAutoConfiguration({ JacksonAutoConfiguration.class,
 			HttpMessageConvertersAutoConfiguration.class, EndpointAutoConfiguration.class,
+			WebEndpointAutoConfiguration.class,
 			ServletManagementContextAutoConfiguration.class, AuditAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class, WebMvcAutoConfiguration.class,
 			ManagementContextAutoConfiguration.class, AuditAutoConfiguration.class,

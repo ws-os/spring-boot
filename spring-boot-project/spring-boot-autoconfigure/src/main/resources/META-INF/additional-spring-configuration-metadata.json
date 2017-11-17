@@ -86,6 +86,10 @@
     "defaultValue": false
   },
   {
+    "name": "spring.datasource.initialization-mode",
+    "defaultValue": "embedded"
+  },
+  {
     "name": "spring.data.cassandra.compression",
     "defaultValue": "none"
   },
@@ -96,13 +100,19 @@
     "defaultValue": true
   },
   {
+    "name": "spring.data.cassandra.repositories.enabled",
+    "type": "java.lang.Boolean",
+    "description": "Enable Cassandra repositories.",
+    "defaultValue": true
+  },
+  {
     "name": "spring.data.couchbase.consistency",
     "defaultValue": "read-your-own-writes"
   },
   {
-    "name": "spring.data.cassandra.repositories.enabled",
+    "name": "spring.data.couchbase.reactive-repositories.enabled",
     "type": "java.lang.Boolean",
-    "description": "Enable Cassandra repositories.",
+    "description": "Enable Couchbase reactive repositories.",
     "defaultValue": true
   },
   {
@@ -143,9 +153,7 @@
   },
   {
     "name": "spring.data.neo4j.open-in-view",
-    "type": "java.lang.Boolean",
-    "description": "Register OpenSessionInViewInterceptor. Binds a Neo4j Session to the thread for the entire processing of the request.",
-    "defaultValue": false
+    "defaultValue": true
   },
   {
     "name": "spring.data.neo4j.repositories.enabled",
@@ -174,6 +182,14 @@
     "defaultValue": [
       "http://localhost:9200"
     ]
+  },
+  {
+    "name": "spring.info.build.location",
+    "defaultValue": "classpath:META-INF/build-info.properties"
+  },
+  {
+    "name": "spring.info.git.location",
+    "defaultValue": "classpath:git.properties"
   },
   {
     "name": "spring.freemarker.prefix",
@@ -225,8 +241,6 @@
   },
   {
     "name": "spring.jpa.open-in-view",
-    "type": "java.lang.Boolean",
-    "description": "Register OpenEntityManagerInViewInterceptor. Binds a JPA EntityManager to the thread for the entire processing of the request.",
     "defaultValue": true
   },
   {
@@ -374,7 +388,7 @@
   },
   {
     "name": "spring.mustache.suffix",
-    "defaultValue": ".html"
+    "defaultValue": ".mustache"
   },
   {
     "name": "spring.mvc.favicon.enabled",
@@ -1028,6 +1042,23 @@
     "description": "Compiler to use.",
     "deprecation": {
       "reason": "Not supported anymore as of Neo4j 3.",
+      "level": "error"
+    }
+  },
+  {
+    "name": "spring.datasource.initialize",
+    "defaultValue": true,
+    "deprecation": {
+      "replacement": "spring.datasource.initialization-mode",
+      "level": "error"
+    }
+  },
+  {
+    "name": "spring.git.properties",
+    "type": "java.lang.String",
+    "description": "Resource reference to a generated git info properties file.",
+    "deprecation": {
+      "replacement": "spring.info.git.location",
       "level": "error"
     }
   },

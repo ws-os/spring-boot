@@ -29,9 +29,7 @@ import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.DataSourceProxy;
 import org.apache.tomcat.jdbc.pool.jmx.ConnectionPool;
 import org.junit.After;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -46,9 +44,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Stephane Nicoll
  */
 public class DataSourceJmxConfigurationTests {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	private ConfigurableApplicationContext context;
 
@@ -118,7 +113,7 @@ public class DataSourceJmxConfigurationTests {
 
 	private void load(Class<?> config, String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		String jdbcUrl = "jdbc:hsqldb:mem:test-" + UUID.randomUUID().toString();
+		String jdbcUrl = "jdbc:hsqldb:mem:test-" + UUID.randomUUID();
 		TestPropertyValues.of(environment).and("spring.datasource.url=" + jdbcUrl)
 				.applyTo(context);
 		if (config != null) {

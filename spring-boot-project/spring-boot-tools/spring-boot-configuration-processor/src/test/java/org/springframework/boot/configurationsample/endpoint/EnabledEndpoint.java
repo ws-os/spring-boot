@@ -16,15 +16,14 @@
 
 package org.springframework.boot.configurationsample.endpoint;
 
-import org.springframework.boot.configurationsample.DefaultEnablement;
 import org.springframework.boot.configurationsample.Endpoint;
 
 /**
- * An endpoint that is enabled unless configured explicitly..
+ * An endpoint that is enabled unless configured explicitly.
  *
  * @author Stephane Nicoll
  */
-@Endpoint(id = "enabled", defaultEnablement = DefaultEnablement.ENABLED)
+@Endpoint(id = "enabled")
 public class EnabledEndpoint {
 
 }

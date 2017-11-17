@@ -16,8 +16,8 @@
 
 package org.springframework.boot.autoconfigure.session;
 
-import org.springframework.boot.autoconfigure.DatabaseInitializationMode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceInitializationMode;
 
 /**
  * Configuration properties for JDBC backed Spring Session.
@@ -33,6 +33,8 @@ public class JdbcSessionProperties {
 
 	private static final String DEFAULT_TABLE_NAME = "SPRING_SESSION";
 
+	private static final String DEFAULT_CLEANUP_CRON = "0 * * * * *";
+
 	/**
 	 * Path to the SQL file to use to initialize the database schema.
 	 */
@@ -44,9 +46,14 @@ public class JdbcSessionProperties {
 	private String tableName = DEFAULT_TABLE_NAME;
 
 	/**
+	 * Cron expression for expired session cleanup job.
+	 */
+	private String cleanupCron = DEFAULT_CLEANUP_CRON;
+
+	/**
 	 * Database schema initialization mode.
 	 */
-	private DatabaseInitializationMode initializeSchema = DatabaseInitializationMode.EMBEDDED;
+	private DataSourceInitializationMode initializeSchema = DataSourceInitializationMode.EMBEDDED;
 
 	public String getSchema() {
 		return this.schema;
@@ -64,11 +71,19 @@ public class JdbcSessionProperties {
 		this.tableName = tableName;
 	}
 
-	public DatabaseInitializationMode getInitializeSchema() {
+	public String getCleanupCron() {
+		return this.cleanupCron;
+	}
+
+	public void setCleanupCron(String cleanupCron) {
+		this.cleanupCron = cleanupCron;
+	}
+
+	public DataSourceInitializationMode getInitializeSchema() {
 		return this.initializeSchema;
 	}
 
-	public void setInitializeSchema(DatabaseInitializationMode initializeSchema) {
+	public void setInitializeSchema(DataSourceInitializationMode initializeSchema) {
 		this.initializeSchema = initializeSchema;
 	}
 

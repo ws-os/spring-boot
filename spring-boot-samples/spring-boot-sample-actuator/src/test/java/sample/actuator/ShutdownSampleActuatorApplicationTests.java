@@ -39,7 +39,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 public class ShutdownSampleActuatorApplicationTests {
 
 	@Autowired
@@ -57,6 +56,7 @@ public class ShutdownSampleActuatorApplicationTests {
 	}
 
 	@Test
+	@DirtiesContext
 	public void testShutdown() throws Exception {
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> entity = this.restTemplate

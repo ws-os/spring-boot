@@ -97,11 +97,12 @@ public class JettyReactiveWebServerFactory extends AbstractReactiveWebServerFact
 		ServletContextHandler contextHandler = new ServletContextHandler(server, "",
 				false, false);
 		contextHandler.addServlet(servletHolder, "/");
+		JettyReactiveWebServerFactory.logger
+				.info("Server initialized with port: " + port);
+		new SslServerCustomizer(port, getSsl(), getSslStoreProvider()).customize(server);
 		for (JettyServerCustomizer customizer : getServerCustomizers()) {
 			customizer.customize(server);
 		}
-		JettyReactiveWebServerFactory.logger
-				.info("Server initialized with port: " + port);
 		return server;
 	}
 

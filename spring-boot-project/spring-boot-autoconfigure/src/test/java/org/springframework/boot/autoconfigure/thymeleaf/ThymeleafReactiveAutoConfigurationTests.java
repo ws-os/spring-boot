@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.ISpringWebFluxTemplateEngine;
+import org.thymeleaf.spring5.SpringWebFluxTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
@@ -36,7 +37,7 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.boot.web.reactive.context.GenericReactiveWebApplicationContext;
+import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -51,13 +52,14 @@ import static org.hamcrest.Matchers.not;
  * Tests for {@link ThymeleafAutoConfiguration} in Reactive applications.
  *
  * @author Brian Clozel
+ * @author Kazuki Shimizu
  */
 public class ThymeleafReactiveAutoConfigurationTests {
 
 	@Rule
 	public OutputCapture output = new OutputCapture();
 
-	private GenericReactiveWebApplicationContext context;
+	private AnnotationConfigReactiveWebApplicationContext context;
 
 	@After
 	public void close() {
@@ -140,6 +142,20 @@ public class ThymeleafReactiveAutoConfigurationTests {
 	}
 
 	@Test
+	public void overrideEnableSpringElCompiler() {
+		load(BaseConfiguration.class, "spring.thymeleaf.enable-spring-el-compiler:true");
+		assertThat(this.context.getBean(SpringWebFluxTemplateEngine.class)
+				.getEnableSpringELCompiler()).isTrue();
+	}
+
+	@Test
+	public void enableSpringElCompilerIsDisabledByDefault() {
+		load(BaseConfiguration.class);
+		assertThat(this.context.getBean(SpringWebFluxTemplateEngine.class)
+				.getEnableSpringELCompiler()).isFalse();
+	}
+
+	@Test
 	public void templateLocationDoesNotExist() throws Exception {
 		load(BaseConfiguration.class,
 				"spring.thymeleaf.prefix:classpath:/no-such-directory/");
@@ -193,7 +209,7 @@ public class ThymeleafReactiveAutoConfigurationTests {
 	}
 
 	private void load(Class<?> config, String... envVariables) {
-		this.context = new GenericReactiveWebApplicationContext();
+		this.context = new AnnotationConfigReactiveWebApplicationContext();
 		TestPropertyValues.of(envVariables).applyTo(this.context);
 		if (config != null) {
 			this.context.register(config);

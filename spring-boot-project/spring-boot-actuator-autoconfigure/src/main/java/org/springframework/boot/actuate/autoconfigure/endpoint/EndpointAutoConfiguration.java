@@ -16,21 +16,12 @@
 
 package org.springframework.boot.actuate.autoconfigure.endpoint;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.springframework.boot.actuate.endpoint.EndpointExposure;
-import org.springframework.boot.actuate.endpoint.OperationParameterMapper;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
-import org.springframework.boot.actuate.endpoint.cache.CachingConfigurationFactory;
-import org.springframework.boot.actuate.endpoint.convert.ConversionServiceOperationParameterMapper;
-import org.springframework.boot.actuate.endpoint.http.ActuatorMediaType;
-import org.springframework.boot.actuate.endpoint.web.WebEndpointOperation;
-import org.springframework.boot.actuate.endpoint.web.annotation.WebAnnotationEndpointDiscoverer;
+import org.springframework.boot.actuate.endpoint.cache.CachingOperationInvokerAdvisor;
+import org.springframework.boot.actuate.endpoint.convert.ConversionServiceParameterMapper;
+import org.springframework.boot.actuate.endpoint.reflect.ParameterMapper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -47,42 +38,16 @@ import org.springframework.core.env.Environment;
 public class EndpointAutoConfiguration {
 
 	@Bean
-	public OperationParameterMapper operationParameterMapper() {
-		return new ConversionServiceOperationParameterMapper();
+	public ParameterMapper endpointOperationParameterMapper() {
+		return new ConversionServiceParameterMapper();
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(CachingConfigurationFactory.class)
-	public DefaultCachingConfigurationFactory cacheConfigurationFactory(
+	@ConditionalOnMissingBean
+	public CachingOperationInvokerAdvisor endpointCachingOperationInvokerAdvisor(
 			Environment environment) {
-		return new DefaultCachingConfigurationFactory(environment);
-	}
-
-	@Configuration
-	@ConditionalOnWebApplication
-	static class EndpointWebConfiguration {
-
-		private static final List<String> MEDIA_TYPES = Arrays
-				.asList(ActuatorMediaType.V2_JSON, "application/json");
-
-		private final ApplicationContext applicationContext;
-
-		EndpointWebConfiguration(ApplicationContext applicationContext) {
-			this.applicationContext = applicationContext;
-		}
-
-		@Bean
-		public EndpointProvider<WebEndpointOperation> webEndpointProvider(
-				OperationParameterMapper parameterMapper,
-				DefaultCachingConfigurationFactory cachingConfigurationFactory) {
-			Environment environment = this.applicationContext.getEnvironment();
-			WebAnnotationEndpointDiscoverer endpointDiscoverer = new WebAnnotationEndpointDiscoverer(
-					this.applicationContext, parameterMapper, cachingConfigurationFactory,
-					MEDIA_TYPES, MEDIA_TYPES);
-			return new EndpointProvider<>(environment, endpointDiscoverer,
-					EndpointExposure.WEB);
-		}
-
+		return new CachingOperationInvokerAdvisor(
+				new EndpointIdTimeToLivePropertyFunction(environment));
 	}
 
 }

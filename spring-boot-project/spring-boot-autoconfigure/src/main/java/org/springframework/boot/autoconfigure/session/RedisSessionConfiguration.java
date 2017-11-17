@@ -42,7 +42,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.RedisHt
 @ConditionalOnClass({ RedisTemplate.class, RedisOperationsSessionRepository.class })
 @ConditionalOnMissingBean(SessionRepository.class)
 @ConditionalOnBean(RedisConnectionFactory.class)
-@Conditional(SessionCondition.class)
+@Conditional(ServletSessionCondition.class)
 @EnableConfigurationProperties(RedisSessionProperties.class)
 class RedisSessionConfiguration {
 
@@ -62,6 +62,7 @@ class RedisSessionConfiguration {
 			}
 			setRedisNamespace(redisSessionProperties.getNamespace());
 			setRedisFlushMode(redisSessionProperties.getFlushMode());
+			setCleanupCron(redisSessionProperties.getCleanupCron());
 		}
 
 	}

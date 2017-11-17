@@ -17,6 +17,7 @@
 package org.springframework.boot.autoconfigure.thymeleaf;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -29,12 +30,13 @@ import org.springframework.util.MimeType;
  * @author Stephane Nicoll
  * @author Brian Clozel
  * @author Daniel Fernández
+ * @author Kazuki Shimizu
  * @since 1.2.0
  */
 @ConfigurationProperties(prefix = "spring.thymeleaf")
 public class ThymeleafProperties {
 
-	private static final Charset DEFAULT_ENCODING = Charset.forName("UTF-8");
+	private static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
 
 	public static final String DEFAULT_PREFIX = "classpath:/templates/";
 
@@ -93,6 +95,11 @@ public class ThymeleafProperties {
 	 * resolution.
 	 */
 	private String[] excludedViewNames;
+
+	/**
+	 * Enable the SpringEL compiler in SpringEL expressions.
+	 */
+	private boolean enableSpringElCompiler;
 
 	/**
 	 * Enable Thymeleaf view resolution for Web frameworks.
@@ -189,6 +196,14 @@ public class ThymeleafProperties {
 
 	public void setViewNames(String[] viewNames) {
 		this.viewNames = viewNames;
+	}
+
+	public boolean isEnableSpringElCompiler() {
+		return this.enableSpringElCompiler;
+	}
+
+	public void setEnableSpringElCompiler(boolean enableSpringElCompiler) {
+		this.enableSpringElCompiler = enableSpringElCompiler;
 	}
 
 	public Reactive getReactive() {

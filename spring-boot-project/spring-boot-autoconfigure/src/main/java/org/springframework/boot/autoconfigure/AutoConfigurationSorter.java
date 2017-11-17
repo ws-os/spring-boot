@@ -61,7 +61,7 @@ class AutoConfigurationSorter {
 		orderedClassNames.sort((o1, o2) -> {
 			int i1 = classes.get(o1).getOrder();
 			int i2 = classes.get(o2).getOrder();
-			return (i1 < i2) ? -1 : (i1 > i2) ? 1 : 0;
+			return Integer.compare(i1, i2);
 		});
 		// Then respect @AutoConfigureBefore @AutoConfigureAfter
 		orderedClassNames = sortByAnnotation(classes, orderedClassNames);
@@ -174,7 +174,7 @@ class AutoConfigurationSorter {
 		private Set<String> readBefore() {
 			if (wasProcessed()) {
 				return this.autoConfigurationMetadata.getSet(this.className,
-						"AutoConfigureBefore", Collections.<String>emptySet());
+						"AutoConfigureBefore", Collections.emptySet());
 			}
 			return getAnnotationValue(AutoConfigureBefore.class);
 		}
@@ -182,7 +182,7 @@ class AutoConfigurationSorter {
 		private Set<String> readAfter() {
 			if (wasProcessed()) {
 				return this.autoConfigurationMetadata.getSet(this.className,
-						"AutoConfigureAfter", Collections.<String>emptySet());
+						"AutoConfigureAfter", Collections.emptySet());
 			}
 			return getAnnotationValue(AutoConfigureAfter.class);
 		}

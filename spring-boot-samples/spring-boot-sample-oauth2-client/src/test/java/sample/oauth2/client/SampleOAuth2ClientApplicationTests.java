@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
 		"APP-CLIENT-ID=my-client-id", "APP-CLIENT-SECRET=my-client-secret" })
-@DirtiesContext
 public class SampleOAuth2ClientApplicationTests {
 
 	@LocalServerPort
@@ -57,10 +55,8 @@ public class SampleOAuth2ClientApplicationTests {
 		ResponseEntity<String> entity = this.restTemplate.getForEntity("/login",
 				String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(entity.getBody())
-				.contains("/oauth2/authorization/code/github-client-1");
-		assertThat(entity.getBody())
-				.contains("/oauth2/authorization/code/github-client-2");
+		assertThat(entity.getBody()).contains("/oauth2/authorization/github-client-1");
+		assertThat(entity.getBody()).contains("/oauth2/authorization/github-client-2");
 	}
 
 }

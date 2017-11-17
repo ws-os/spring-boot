@@ -22,12 +22,12 @@ import java.util.function.Supplier;
 import org.springframework.boot.context.annotation.Configurations;
 import org.springframework.boot.test.context.assertj.AssertableReactiveWebApplicationContext;
 import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebApplicationContext;
 import org.springframework.boot.web.reactive.context.ConfigurableReactiveWebApplicationContext;
-import org.springframework.boot.web.reactive.context.GenericReactiveWebApplicationContext;
 import org.springframework.context.ApplicationContext;
 
 /**
- * A {@link AbstractApplicationContextRunner ApplicationContext runner} for a
+ * An {@link AbstractApplicationContextRunner ApplicationContext runner} for a
  * {@link ConfigurableReactiveWebApplicationContext}.
  * <p>
  * See {@link AbstractApplicationContextRunner} for details.
@@ -42,10 +42,10 @@ public final class ReactiveWebApplicationContextRunner extends
 
 	/**
 	 * Create a new {@link ReactiveWebApplicationContextRunner} instance using a
-	 * {@link GenericReactiveWebApplicationContext} as the underlying source.
+	 * {@link AnnotationConfigReactiveWebApplicationContext} as the underlying source.
 	 */
 	public ReactiveWebApplicationContextRunner() {
-		this(GenericReactiveWebApplicationContext::new);
+		this(AnnotationConfigReactiveWebApplicationContext::new);
 	}
 
 	/**

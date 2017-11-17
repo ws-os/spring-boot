@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * <p>
  * Using this annotation will disable full auto-configuration and instead apply only
  * configuration relevant to MVC tests (i.e. {@code @Controller},
- * {@code @ControllerAdvice}, {@code @JsonComponent} {@code Filter},
+ * {@code @ControllerAdvice}, {@code @JsonComponent}, {@code Converter}, {@code Filter},
  * {@code WebMvcConfigurer} and {@code HandlerMethodArgumentResolver} beans but not
  * {@code @Component}, {@code @Service} or {@code @Repository} beans).
  * <p>

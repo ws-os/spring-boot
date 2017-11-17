@@ -16,17 +16,18 @@
 
 package org.springframework.boot.actuate.autoconfigure.web.servlet;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
 import org.junit.Test;
 
-import org.springframework.boot.actuate.endpoint.DefaultEnablement;
 import org.springframework.boot.actuate.endpoint.EndpointInfo;
 import org.springframework.boot.actuate.endpoint.OperationType;
+import org.springframework.boot.actuate.endpoint.web.EndpointMediaTypes;
 import org.springframework.boot.actuate.endpoint.web.OperationRequestPredicate;
 import org.springframework.boot.actuate.endpoint.web.WebEndpointHttpMethod;
-import org.springframework.boot.actuate.endpoint.web.WebEndpointOperation;
+import org.springframework.boot.actuate.endpoint.web.WebOperation;
 import org.springframework.boot.actuate.endpoint.web.servlet.WebMvcEndpointHandlerMapping;
 import org.springframework.boot.endpoint.web.EndpointMapping;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -36,7 +37,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.support.StaticApplicationContext;
-import org.springframework.web.servlet.handler.AbstractHandlerMethodMapping;
 import org.springframework.web.servlet.handler.AbstractUrlHandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 
@@ -57,8 +57,7 @@ public class RequestMappingEndpointTests {
 		mapping.setUrlMap(Collections.singletonMap("/foo", new Object()));
 		mapping.setApplicationContext(new StaticApplicationContext());
 		mapping.initApplicationContext();
-		this.endpoint.setHandlerMappings(
-				Collections.<AbstractUrlHandlerMapping>singletonList(mapping));
+		this.endpoint.setHandlerMappings(Collections.singletonList(mapping));
 		Map<String, Object> result = this.endpoint.mappings();
 		assertThat(result).hasSize(1);
 		@SuppressWarnings("unchecked")
@@ -118,8 +117,7 @@ public class RequestMappingEndpointTests {
 	@Test
 	public void concreteMethodMappings() {
 		WebMvcEndpointHandlerMapping mapping = createHandlerMapping();
-		this.endpoint.setMethodMappings(
-				Collections.<AbstractHandlerMethodMapping<?>>singletonList(mapping));
+		this.endpoint.setMethodMappings(Collections.singletonList(mapping));
 		Map<String, Object> result = this.endpoint.mappings();
 		assertThat(result).hasSize(2);
 		assertThat(result.keySet())
@@ -137,12 +135,14 @@ public class RequestMappingEndpointTests {
 		OperationRequestPredicate requestPredicate = new OperationRequestPredicate("test",
 				WebEndpointHttpMethod.GET, Collections.singletonList("application/json"),
 				Collections.singletonList("application/json"));
-		WebEndpointOperation operation = new WebEndpointOperation(OperationType.READ,
+		WebOperation operation = new WebOperation(OperationType.READ,
 				(arguments) -> "Invoked", true, requestPredicate, "test");
 		WebMvcEndpointHandlerMapping mapping = new WebMvcEndpointHandlerMapping(
 				new EndpointMapping("application"),
-				Collections.singleton(new EndpointInfo<>("test",
-						DefaultEnablement.ENABLED, Collections.singleton(operation))));
+				Collections.singleton(new EndpointInfo<>("test", true,
+						Collections.singleton(operation))),
+				new EndpointMediaTypes(Arrays.asList("application/vnd.test+json"),
+						Arrays.asList("application/vnd.test+json")));
 		mapping.setApplicationContext(new StaticApplicationContext());
 		mapping.afterPropertiesSet();
 		return mapping;

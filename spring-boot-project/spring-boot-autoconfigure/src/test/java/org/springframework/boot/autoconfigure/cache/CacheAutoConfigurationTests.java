@@ -90,6 +90,7 @@ import static org.mockito.Mockito.verify;
  * @author Stephane Nicoll
  * @author Eddú Meléndez
  * @author Mark Paluch
+ * @author Ryon Day
  */
 @RunWith(ModifiedClassPathRunner.class)
 @ClassPathExclusions("hazelcast-client-*.jar")
@@ -280,14 +281,23 @@ public class CacheAutoConfigurationTests {
 	@Test
 	public void redisCacheExplicit() {
 		this.contextRunner.withUserConfiguration(RedisCacheConfiguration.class)
-				.withPropertyValues("spring.cache.type=redis").run((context) -> {
+				.withPropertyValues("spring.cache.type=redis",
+						"spring.cache.redis.time-to-live=15000",
+						"spring.cache.redis.cacheNullValues=false",
+						"spring.cache.redis.keyPrefix=foo",
+						"spring.cache.redis.useKeyPrefix=false")
+				.run((context) -> {
 					RedisCacheManager cacheManager = getCacheManager(context,
 							RedisCacheManager.class);
 					assertThat(cacheManager.getCacheNames()).isEmpty();
-					assertThat(
-							((org.springframework.data.redis.cache.RedisCacheConfiguration) new DirectFieldAccessor(
-									cacheManager).getPropertyValue("defaultCacheConfig"))
-											.usePrefix()).isTrue();
+					org.springframework.data.redis.cache.RedisCacheConfiguration redisCacheConfiguration = (org.springframework.data.redis.cache.RedisCacheConfiguration) new DirectFieldAccessor(
+							cacheManager).getPropertyValue("defaultCacheConfig");
+					assertThat(redisCacheConfiguration.getTtl())
+							.isEqualTo(java.time.Duration.ofSeconds(15));
+					assertThat(redisCacheConfiguration.getAllowCacheNullValues())
+							.isFalse();
+					assertThat(redisCacheConfiguration.getKeyPrefix()).contains("foo");
+					assertThat(redisCacheConfiguration.usePrefix()).isFalse();
 				});
 	}
 
@@ -309,6 +319,14 @@ public class CacheAutoConfigurationTests {
 					RedisCacheManager cacheManager = getCacheManager(context,
 							RedisCacheManager.class);
 					assertThat(cacheManager.getCacheNames()).containsOnly("foo", "bar");
+					org.springframework.data.redis.cache.RedisCacheConfiguration redisCacheConfiguration = (org.springframework.data.redis.cache.RedisCacheConfiguration) new DirectFieldAccessor(
+							cacheManager).getPropertyValue("defaultCacheConfig");
+					assertThat(redisCacheConfiguration.getTtl())
+							.isEqualTo(java.time.Duration.ofMinutes(0));
+					assertThat(redisCacheConfiguration.getAllowCacheNullValues())
+							.isTrue();
+					assertThat(redisCacheConfiguration.getKeyPrefix()).isEmpty();
+					assertThat(redisCacheConfiguration.usePrefix()).isTrue();
 				});
 	}
 
@@ -935,8 +953,7 @@ public class CacheAutoConfigurationTests {
 		@Bean
 		public javax.cache.CacheManager customJCacheCacheManager() {
 			javax.cache.CacheManager cacheManager = mock(javax.cache.CacheManager.class);
-			given(cacheManager.getCacheNames())
-					.willReturn(Collections.<String>emptyList());
+			given(cacheManager.getCacheNames()).willReturn(Collections.emptyList());
 			return cacheManager;
 		}
 

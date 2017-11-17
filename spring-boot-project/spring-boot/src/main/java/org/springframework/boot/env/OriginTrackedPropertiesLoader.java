@@ -20,6 +20,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ import org.springframework.util.Assert;
  *
  * @author Madhura Bhave
  * @author Phillip Webb
+ * @author Thiago Hirata
  */
 class OriginTrackedPropertiesLoader {
 
@@ -153,8 +155,8 @@ class OriginTrackedPropertiesLoader {
 		private int character;
 
 		CharacterReader(Resource resource) throws IOException {
-			this.reader = new LineNumberReader(
-					new InputStreamReader(resource.getInputStream()));
+			this.reader = new LineNumberReader(new InputStreamReader(
+					resource.getInputStream(), StandardCharsets.ISO_8859_1));
 		}
 
 		@Override

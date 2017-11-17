@@ -36,11 +36,6 @@ public class ReactiveWebServerApplicationContext
 	private volatile WebServer webServer;
 
 	public ReactiveWebServerApplicationContext() {
-		super();
-	}
-
-	public ReactiveWebServerApplicationContext(Class<?>... annotatedClasses) {
-		super(annotatedClasses);
 	}
 
 	@Override
@@ -87,6 +82,15 @@ public class ReactiveWebServerApplicationContext
 			this.webServer = getWebServerFactory().getWebServer(getHttpHandler());
 		}
 		initPropertySources();
+	}
+
+	/**
+	 * Returns the {@link WebServer} that was created by the context or {@code null} if
+	 * the server has not yet been created.
+	 * @return the web server
+	 */
+	public WebServer getWebServer() {
+		return this.webServer;
 	}
 
 	/**
